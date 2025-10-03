@@ -1,0 +1,18 @@
+server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: event-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS}
+    #bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+app:
+  topics:
+    user: user-events
+    payment: payment-events
+    movie: movie-events

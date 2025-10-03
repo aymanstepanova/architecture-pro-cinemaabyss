@@ -21,8 +21,8 @@ public class ProxyController {
     public ProxyController(
             @Qualifier("monolithWebClient") WebClient monolithClient,
             @Qualifier("moviesWebClient") WebClient moviesClient,
-            @Value("${GRADUAL_MIGRATION:true}") boolean gradualMigration,
-            @Value("${MOVIES_MIGRATION_PERCENT:50}") int moviesMigrationPercent
+            @Value("${integration.gradual.migration}") boolean gradualMigration,
+            @Value("${integration.movies.migration.percent}") int moviesMigrationPercent
     ) {
         this.monolithClient = monolithClient;
         this.moviesClient = moviesClient;
