@@ -2,8 +2,9 @@ name: Docker Build and Push
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main, cinema]
+  push: # каждый push в любую ветку
+    branches:
+      - '**'
     paths:
       - 'src/**'
       - '.github/workflows/docker-build-push.yml'
