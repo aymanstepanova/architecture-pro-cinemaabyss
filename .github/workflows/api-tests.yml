@@ -1,8 +1,8 @@
 name: API Tests
 
 on:
- # push:
-  #  branches: [ main, master, cinema]
+  push:
+    branches: [ main, master, cinema ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
