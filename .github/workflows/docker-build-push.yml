@@ -123,6 +123,6 @@ jobs:
           context: ./src/microservices/events
           push: true
           tags: ${{ steps.meta-event.outputs.tags }}
-          labels: ${{ steps.meta-proxy.outputs.labels }}
+          labels: ${{ steps.meta-event.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
