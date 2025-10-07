@@ -59,6 +59,17 @@ public class ProxyController {
                 .toEntity(String.class);
     }
 
+    @PostMapping(value = "/users",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<String>> createUser(@RequestBody String body) {
+        return monolithClient.post().uri("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .retrieve()
+                .toEntity(String.class);
+    }
+
     private WebClient pickMoviesTarget() {
         if (!gradualMigration) {
             return moviesClient;
