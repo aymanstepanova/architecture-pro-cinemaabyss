@@ -4,6 +4,7 @@ package com.cinemaabyss.events.kafka;
 import com.cinemaabyss.events.kafka.model.MovieEvent;
 import com.cinemaabyss.events.kafka.model.PaymentEvent;
 import com.cinemaabyss.events.kafka.model.UserEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class EventProducer {
 
@@ -49,6 +51,8 @@ public class EventProducer {
                 .setHeader(KafkaHeaders.KEY, key)
                 .setHeader("correlationId", key)
                 .build();
+
+        log.info("send: %s".formatted(payload));
         kafkaTemplate.send(msg);
     }
 }

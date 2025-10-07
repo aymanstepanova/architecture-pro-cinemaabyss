@@ -3,9 +3,11 @@ package com.cinemaabyss.events.kafka.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
+@ToString
 public class UserEvent {
     @JsonProperty("user_id")
     private String userId;
