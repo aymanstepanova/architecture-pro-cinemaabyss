@@ -7,6 +7,7 @@
 Добавьте ссылку на файл в этот шаблон
 [Диаграмма контейнеров (C4) — PlantUML](docs/diagrams/cinemaabyss-c4-container.puml)
 
+![cinemaabyss-c4-container-v2.png](docs%2Fdiagrams%2Fcinemaabyss-c4-container-v2.png)
 
 ## Задание 2
 
@@ -446,6 +447,9 @@ You can see 21 for the upstream_rq_pending_overflow value which means 21 calls s
 
 **circuit breaker**
 ![img.png](img/circuit.png)
+
+прогон тестов из helm
+![img.png](img/tests-after-helm.png)
 
 Удаляем все
 ```bash
