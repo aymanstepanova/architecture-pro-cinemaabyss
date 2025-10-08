@@ -17,25 +17,21 @@ spec:
               service:
                 name: proxy-service
                 port:
-                  number:
-                    8000
-          # TODO: после переноса методов добавления в proxy - уточнять эндпоинты
+                  number: 8000
           - path: /api
             pathType: Prefix
             backend:
               service:
                 name: monolith
                 port:
-                  number:
-                    8080
+                  number: 8080
           - path: /api/movies
             pathType: Prefix
             backend:
               service:
-                name: movies-service
+                name: monolith
                 port:
-                  number:
-                    8081
+                  number: 8080
           - path: /api/events
             pathType: Prefix
             backend:

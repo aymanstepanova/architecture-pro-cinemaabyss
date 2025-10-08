@@ -61,11 +61,11 @@
 
 ### Результаты
 **Скриншот сообщения в топике**
-![Скриншот сообщения в топике](test-topic.png)
+![Скриншот сообщения в топике](img/test-topic.png)
 **Тесты 'npm run test:local'**
-![Тесты 'npm run test:local'](npm-test.png)
+![Тесты 'npm run test:local'](img/npm-test.png)
 **Тесты в Postman**
-![Тесты в постман](postman-tests.png)
+![Тесты в постман](img/postman-tests.png)
 
 ## Задание 3
 
@@ -278,11 +278,25 @@ cat .docker/config.json | base64
   Часть тестов с health-чек упадет, но создание событий отработает.
   Откройте логи event-service и сделайте скриншот обработки событий
 
-![Результат тестов kubernetes](kubernetes-test.png)
+**Результат тестов kubernetes**
+![Результат тестов kubernetes](img/kubernetes-test.png)
+**Логи событий тестов kubernetes**
+![Логи событий тестов kubernetes](img/logs-kubernetes.png)
 
 #### Шаг 3
-Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
+Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и скриншот вывода event-service после вызова тестов.
 
+**скриншот вывода при вызове https://cinemaabyss.example.com/api/movies**
+![скриншот вывода при вызове movies](img/kubernetes-movies-postman.png)
+
+**POST /api/events/movie**
+![img.png](img/post_api_events_movie.png)
+
+**POST /api/events/user**
+![img.png](img/post_api_events_user.png)
+
+**POST /api/events/payment**
+![img.png](img/post_api_events_payment.png)
 
 ## Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
@@ -358,6 +372,12 @@ minikube tunnel
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
 
+**скриншот развертывания helm**
+![img.png](img/helm.png)
+
+**Вывод из кубера helm**
+![img.png](img/helm-curl.png)
+
 
 # Задание 5
 Компания планирует активно развиваться и для повышения надежности, безопасности, реализации сетевых паттернов типа Circuit Breaker и канареечного деплоя вам как архитектору необходимо развернуть istio и настроить circuit breaker для monolith и movies сервисов.
@@ -423,6 +443,9 @@ You can see 21 for the upstream_rq_pending_overflow value which means 21 calls s
 ```
 
 Приложите скриншот работы circuit breaker'а
+
+**circuit breaker**
+![img.png](img/circuit.png)
 
 Удаляем все
 ```bash
