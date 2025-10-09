@@ -181,11 +181,11 @@ ingress:
           pathType: Prefix
           service: proxy-service
           port: 80
-        - path: /api
+        - path: /api/subscriptions
           pathType: Prefix
           service: monolith
           port: 8080
-        - path: /api/movies
+        - path: /api/payments
           pathType: Prefix
           service: monolith
           port: 8080

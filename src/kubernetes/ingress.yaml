@@ -18,14 +18,14 @@ spec:
                 name: proxy-service
                 port:
                   number: 8000
-          - path: /api
+          - path: /api/subscriptions
             pathType: Prefix
             backend:
               service:
                 name: monolith
                 port:
                   number: 8080
-          - path: /api/movies
+          - path: /api/payments
             pathType: Prefix
             backend:
               service:
