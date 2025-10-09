@@ -1,8 +1,9 @@
 name: API Tests
 
 on:
-  push:
-    branches: [ main, master ]
+  push: # каждый push в любую ветку
+    branches:
+      - '**'
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:

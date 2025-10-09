@@ -24,8 +24,19 @@ spec:
         app: proxy-service
     spec:
       containers:
-      - name: proxy-service
-        ..... тут
+        - name: proxy-service
+          image: "{{ .Values.proxyService.image.repository }}:{{ .Values.proxyService.image.tag }}"
+          imagePullPolicy: {{ .Values.proxyService.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.proxyService.service.port }}
+          env:
+            {{- range $k, $v := .Values.proxyService.env }}
+            - name: {{ $k }}
+              value: "{{ $v }}"
+            {{- end }}
+          resources:
+            {{- toYaml .Values.proxyService.resources | nindent 12 }}
 ---
 apiVersion: v1
 kind: Service
@@ -38,5 +49,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
-    ... и тут
+    app: proxy-service
+  type: {{ .Values.proxyService.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.proxyService.service.port }}
+      targetPort: {{ .Values.proxyService.service.targetPort }}
 {{- end }}

@@ -1,0 +1,132 @@
+@startuml
+' C4: Контейнерная диаграмма To-Be «Кинобездна»
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_LEFT_RIGHT()
+title C4 Container — «Кинобездна» (Target Architecture)
+
+Person(user, "Пользователь", "Мобильные устройства / Web / Smart TV")
+
+' === Граница системы ===
+System_Boundary(ca, "Платформа «Кинобездна»") {
+
+  ' Единая точка входа
+  Container(gw, "API Gateway", "Nginx + Spring Gateway", "Единая точка вызова: маршрутизация, аутентификация на краю, rate limit, флаги, канареечные/blue-green")
+
+  Container(ui, "Web / Mobile / Smart TV UI", "SPA / Native", "Клиентские интерфейсы; статическая раздача через CDN")
+
+  ' ---------- Domain: Accounts ----------
+  Container_Boundary(acc, "Домен: Accounts") {
+    Container(auth, "Auth Service", "Java", "OIDC/OAuth2, JWT, refresh/rotation, SSO")
+    Container(profile, "User Service", "Java", "Профили, лайки/оценки, избранное")
+    ContainerDb(accdb, "Accounts DB", "PostgreSQL", "Учётные записи, профили, соц-граф (опц.)")
+  }
+
+  ' ---------- Domain: Catalog ----------
+  Container_Boundary(cat, "Домен: Catalog") {
+    Container(catalog, "Catalog/Metadata Service", "Go", "Фильмы, сериалы, сезоны/эпизоды, актёры, жанры, обложки")
+    ContainerDb(catdb, "Catalog DB", "PostgreSQL", "Нормализованные метаданные контента")
+    Container(obj, "Object Storage", "S3-совместимое", "Постеры/превью/статика; Origin для CDN")
+    Rel_R(catalog, obj, "Загрузка/чтение медиа-артефактов", "S3 API")
+  }
+
+  ' ---------- Domain: Discovery/Search ----------
+  Container_Boundary(disc, "Домен: Discovery & Search") {
+    Container(search, "Search Service", "Java", "Поиск и подсказки; индексация каталога")
+    ContainerDb(es, "Search Index", "Elasticsearch/OpenSearch", "Полнотекстовый индекс каталога")
+    Rel(search, es, "Индексирование/поиск", "REST/JSON")
+  }
+
+  ' ---------- Domain: Billing ----------
+  Container_Boundary(bill, "Домен: Billing") {
+    Container(pay, "Payments Service", "Java", "Инициирование платежей, вебхуки PSP, антифрод (опц.)")
+    Container(subs, "Subscriptions Service", "Java", "Планы, статусы, льготы/скидки, доступ к контенту")
+    ContainerDb(billdb, "Billing DB", "PostgreSQL", "Платежи, подписки, скидки/купоны")
+  }
+
+  ' ---------- Domain: Messaging ----------
+  Container_Boundary(msgdom, "Домен: Messaging") {
+    Container(notif, "Notifications Service", "Go/Java", "Email/SMS/Push; шаблоны, локализация")
+  }
+
+  ' ---------- Domain: Integration & Events ----------
+  Container_Boundary(intg, "Домен: Integration & Events") {
+    ContainerQueue(kafka, "Event Bus", "Apache Kafka", "Доменные события и интеграции")
+    Container(events, "Events/ETL Service", "Java", "Outbox/CDC, агрегации, коннекторы (Debezium/Connect)")
+    Container(cache, "Cache", "Redis", "Кэш каталога, профилей и прав доступа")
+  }
+
+  ' ---------- Media Delivery (опциональный прикладной сервис) ----------
+  Container_Boundary(deliv, "Домен: Delivery") {
+    Container(stream, "Streaming Edge (опц.)", "Nginx-rtmp/HLS packager", "Пре-подготовка HLS/DASH, токен-валидация")
+  }
+
+  ' ---------- Монолит на период миграции ----------
+  Container(legacy, "Legacy Monolith", "Go", "Текущая реализация; постепенно «задушаем» через Gateway")
+}
+
+' === Внешние системы ===
+Container_Ext(cdn, "CDN", "Раздача статики/видеопотоков")
+Container_Ext(reco, "Recommendation Engine", "Внешний сервис", "Персональные подборки/скоринг")
+Container_Ext(psp, "Платёжные шлюзы (PSP)", "Внешние", "Acquiring/Provider APIs")
+Container_Ext(prov, "Контент-провайдеры", "Внешние API", "Метаданные/потоки партнёров")
+Container_Ext(mail, "Email/SMS/Push провайдеры", "Внешние", "Отправка сообщений")
+
+' === Пользователь и входной поток ===
+Rel(user, ui, "Взаимодействует", "HTTPS")
+Rel(ui, cdn, "Статика/медиа (HLS/DASH)", "HTTPS")
+Rel(ui, gw, "API вызовы", "HTTPS")
+
+' === Единая точка вызова и маршрутизация ===
+Rel(gw, auth, "Логин/refresh/JWKS", "HTTP/REST + JWT")
+Rel(gw, profile, "Профиль, оценки, избранное", "HTTP/REST")
+Rel(gw, catalog, "Каталог/метаданные", "HTTP/REST")
+Rel(gw, search, "Поиск/подсказки", "HTTP/REST")
+Rel(gw, subs, "Статус подписки/планы", "HTTP/REST")
+Rel(gw, pay, "Платежные операции", "HTTP/REST")
+Rel(gw, notif, "Триггеры уведомлений", "HTTP/REST")
+Rel(gw, legacy, "Проксирование части маршрутов (strangler)", "HTTP/REST")
+
+' === Данные и кэш ===
+Rel(profile, accdb, "CRUD", "SQL")
+Rel(catalog, catdb, "CRUD", "SQL")
+Rel(pay, billdb, "CRUD", "SQL")
+Rel(subs, billdb, "CRUD", "SQL")
+Rel_R(catalog, cache, "Кэш карточек/листингов", "GET/SET")
+Rel_R(profile, cache, "Кэш профиля/прав доступа", "GET/SET")
+
+' === Поиск и индексирование ===
+Rel(catalog, kafka, "MovieUpserted / MetadataChanged", "events")
+Rel(search, kafka, "Consume Movie* events", "")
+Rel(search, catalog, "Fetch полные метаданные для индекса", "HTTP/REST")
+Rel(search, es, "Индексирование/поиск", "REST/JSON")
+
+' === Интеграции и события ===
+Rel(events, kafka, "Consume/Produce", "")
+Rel(events, catdb, "CDC/агрегации (через коннекторы)", "SQL/Connect")
+Rel(catalog, prov, "Импорт/обновление метаданных", "REST/Webhooks")
+Rel(pay, psp, "Инициирование платежей/вебхуки", "REST/Webhooks")
+Rel(notif, mail, "Отправка сообщений", "REST/SMTP/SMS API")
+Rel(catalog, reco, "Запрос рекомендаций", "REST")
+Rel(stream, cdn, "Origin или edge-публикация HLS/DASH", "HTTP")
+
+' === Доставка медиа и статики ===
+Rel(cdn, obj, "Origin pull (постеры/статика)", "HTTP/S3")
+
+' === Легенда ===
+SHOW_LEGEND()
+legend right
+== Домены ==
+Accounts: аутентификация, профили
+Catalog: метаданные контента, артефакты (S3)
+Discovery: поиск/подсказки (Elasticsearch)
+Billing: платежи и подписки
+Messaging: уведомления
+Integration & Events: Kafka, CDC, Redis
+Delivery: подготовка/раздача HLS/DASH (опц.), CDN
+== Принципы ==
+• Единая точка входа — API Gateway
+• Событийная согласованность — Kafka (CDC)
+• Своё хранилище на сервис (PostgreSQL/ES/S3/Redis)
+• Strangler-pattern для миграции с монолита
+endlegend
+@enduml

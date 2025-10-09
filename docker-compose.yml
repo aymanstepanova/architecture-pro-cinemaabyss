@@ -19,6 +19,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
     networks:
       - cinemaabyss-network
 
@@ -26,6 +27,8 @@ services:
   zookeeper:
     image: wurstmeister/zookeeper:latest
     container_name: cinemaabyss-zookeeper
+    environment:
+      VIRTUAL_HOST: zookeeper
     ports:
       - "2181:2181"
     networks:
@@ -40,6 +43,7 @@ services:
     ports:
       - "9092:9092"
     environment:
+      VIRTUAL_HOST: kafka
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -57,7 +61,8 @@ services:
       dockerfile: Dockerfile
     container_name: cinemaabyss-monolith
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
@@ -73,7 +78,14 @@ services:
       dockerfile: Dockerfile
     container_name: cinemaabyss-movies-service
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail -s http://localhost:8081/actuator/health
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 6
     ports:
       - "8081:8081"
     environment:
@@ -93,6 +105,12 @@ services:
       - kafka
     ports:
       - "8082:8082"
+    healthcheck:
+      test: curl --fail -s http://localhost:8082/actuator/health
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 6
     environment:
       PORT: 8082
       KAFKA_BROKERS: kafka:9092
